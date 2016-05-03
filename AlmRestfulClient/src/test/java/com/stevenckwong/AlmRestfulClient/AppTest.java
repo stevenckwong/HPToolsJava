@@ -33,7 +33,8 @@ public class AppTest
      */
     public void testApp()
     {
-    	App app = new App();
+    	App app = App.getInstance();
+    	
     	// Testing the default constructor that doesn't provide any values
     	assertEquals("http://localhost:8080/qcbin/api", app.getAlmAPIURL());
     	app = null;
@@ -42,12 +43,13 @@ public class AppTest
     	System.setProperty("almProtocol", "https");
     	System.setProperty("almHost", "testhost.com");
     	System.setProperty("almPort", "9090");
-    	app = new App();
+    	app = App.getInstance();
     	assertEquals("https://testhost.com:9090/qcbin/api", app.getAlmAPIURL());
     	app = null;
     	
     	// Test the constructor with parameters.
-    	app = new App("testhost2","1010","https");
+    	
+    	app = App.getInstance("testhost2","1010","https");
     	assertEquals("https://testhost2:1010/qcbin/api", app.getAlmAPIURL());
     	app = null;
     	

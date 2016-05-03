@@ -308,4 +308,10 @@ public class App
     	return app;
 	}
 	
+	public static App getInstance(String host, String port, String protocol) {
+		App app = new App();
+    	app.setDefaults(host, port, protocol);
+    	
+    	return app;
+	}
 }
