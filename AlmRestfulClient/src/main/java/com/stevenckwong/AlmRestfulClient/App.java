@@ -140,14 +140,16 @@ public class App
 			if (this.conn.getResponseCode()!=200) {
 				throw new RuntimeException("Failed: HTTP Error Code: " + this.conn.getResponseCode());
 			}
+			// Debugging Code Below
+			
 			// System.out.println("Content Type is: " + this.conn.getContentType());
 			// this.conn.getContent();
 			
-			CookieStore cookieJar = manager.getCookieStore();
-			List <HttpCookie> cookies = cookieJar.getCookies();
-			for (HttpCookie cookie: cookies) {
-				System.out.println("CookieHandler retrieved cookie after sign-in: " + cookie);
-			}
+//			CookieStore cookieJar = manager.getCookieStore();
+//			List <HttpCookie> cookies = cookieJar.getCookies();
+//			for (HttpCookie cookie: cookies) {
+//				System.out.println("CookieHandler retrieved cookie after sign-in: " + cookie);
+//			}
 			
 			this.conn.disconnect();
 		}
@@ -162,15 +164,15 @@ public class App
 		
 	}
 	
-	
 	public void signOut() {
 		try {
-			CookieManager manager = (CookieManager) CookieHandler.getDefault();
-			CookieStore cookieJar = manager.getCookieStore();
-			List <HttpCookie> cookies = cookieJar.getCookies();
-			for (HttpCookie cookie: cookies) {
-				System.out.println("CookieHandler retrieved cookie before signout: " + cookie);
-			}
+			// Debugging Code Below
+//			CookieManager manager = (CookieManager) CookieHandler.getDefault();
+//			CookieStore cookieJar = manager.getCookieStore();
+//			List <HttpCookie> cookies = cookieJar.getCookies();
+//			for (HttpCookie cookie: cookies) {
+//				System.out.println("CookieHandler retrieved cookie before signout: " + cookie);
+//			}
 			
 			String urlString = this.getAlmAPIURL() + "/authentication/sign-out";	
 			URL signInURL = new URL(urlString);
@@ -180,11 +182,11 @@ public class App
 			this.conn.connect();
 			
 			
-			cookieJar = manager.getCookieStore();
-			cookies = cookieJar.getCookies();
-			for (HttpCookie cookie: cookies) {
-				System.out.println("CookieHandler retrieved cookie after signout: " + cookie);
-			}
+//			cookieJar = manager.getCookieStore();
+//			cookies = cookieJar.getCookies();
+//			for (HttpCookie cookie: cookies) {
+//				System.out.println("CookieHandler retrieved cookie after signout: " + cookie);
+//			}
 			
 			if (this.conn.getResponseCode()!=200) {
 				throw new RuntimeException("Failed: HTTP Error Code: " + this.conn.getResponseCode());
@@ -202,7 +204,6 @@ public class App
 		}
 		
 	}
-	
 	
 	// Accessing anything other than Defects requires the experimental REST API.
 	public void getEntityById(String type, String id) {
@@ -313,5 +314,9 @@ public class App
     	app.setDefaults(host, port, protocol);
     	
     	return app;
+	}
+	
+	public static void main(String[] args) {
+
 	}
 }
