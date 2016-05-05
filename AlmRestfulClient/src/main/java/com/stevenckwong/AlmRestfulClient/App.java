@@ -149,10 +149,14 @@ public class App
 		}
 	}
 	
-	public void signIn() {
+	public boolean signIn() {
+		
 		try {
 			
 			// We have to set the Cookie Handler with the Cookie Manager to handle Cookie Management from the server.
+			
+			
+			
 			CookieManager manager = new CookieManager();
 			manager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 			CookieHandler.setDefault(manager);
@@ -168,9 +172,16 @@ public class App
 					Base64.getEncoder().encodeToString(userAndPassword.getBytes()));
 			this.conn.connect();
 			
-			if (this.conn.getResponseCode()!=200) {
-				throw new RuntimeException("Failed: HTTP Error Code: " + this.conn.getResponseCode());
+			int responseCode = this.conn.getResponseCode();
+			if (responseCode==401) {
+				System.out.println("ALM REST Response Code: 401 - User is not authenticated. Please retry with different user/password.");
+				return false;
 			}
+			if (responseCode!=200) {
+				throw new RuntimeException("Failed: HTTP Error Code: " + this.conn.getResponseCode());
+				
+			}
+		
 			// Uncomment the below to see the Cookies generated from Signing in.
 						
 //			CookieStore cookieJar = manager.getCookieStore();
@@ -180,15 +191,20 @@ public class App
 //			}
 			
 			this.conn.disconnect();
+			return true;
+
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
 			System.out.println("Error encountered during instantiation of URL");
+			return false;
 		}
 		catch (IOException ioe) {
 			ioe.printStackTrace();
 			System.out.println("IOException encountered during connection open");
+			return false;
 		}
+		
 		
 	}
 	
@@ -276,7 +292,11 @@ public class App
 				
 	}
 	
-	public void attachFileToEntity(String type, String id, String filename, String filepath) {
+	public boolean attachFileToTest(String id, String filename, String filepath) {
+		return attachFileToEntity("test",id,filename,filepath);
+	}
+	
+	private boolean attachFileToEntity(String type, String id, String filename, String filepath) {
 		try {
 			
 			if (filepath==null) {filepath="."; }
@@ -317,14 +337,18 @@ public class App
 			
 			out.close();
 			this.conn.disconnect();
+			
+			return true;
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
 			System.out.println("Error encountered during instantiation of URL");
+			return false;
 		}
 		catch (IOException ioe) {
 			ioe.printStackTrace();
 			System.out.println("IOException encountered during connection open");
+			return false;
 		}		
 	}
 	
