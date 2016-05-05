@@ -17,6 +17,17 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
+// these are for the password decryption
+// import java.io.IOException;
+// import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
+// import org.apache.commons.codec.binary.Base64;
+
 
 /**
  * AlmRestfulClient is a Java client that uses REST APIs to access HP
@@ -54,6 +65,13 @@ public class App
 	private HttpURLConnection conn;
 	private String almUser;
 	private String almPassword;
+
+	// Make sure these are the same values with that in the PasswordTool
+    private final char[] PASSWORD = "AlmRestfulClientPassword".toCharArray();
+    private final byte[] SALT = {
+        (byte) 0xde, (byte) 0x33, (byte) 0x10, (byte) 0x12,
+        (byte) 0xde, (byte) 0x33, (byte) 0x10, (byte) 0x12,
+    };	
 	
 	public App () {
 
@@ -112,16 +130,29 @@ public class App
 	
 	
 	public void setAlmParameters(String domain, String project, String user, String password) {
-		this.almDomain = domain;
-		this.almProject = project;
-		this.almUser = user;
-		this.almPassword = password;
+		try {
+			this.almDomain = domain;
+			this.almProject = project;
+			this.almUser = user;
+			this.almPassword = this.decrypt(password);
+		} catch (IllegalArgumentException e) {
+			this.almPassword = "";
+			e.printStackTrace();
+		}
+		catch (IOException ioe) {
+			this.almPassword = "";
+			ioe.printStackTrace();
+		}
+		catch (GeneralSecurityException gse) {
+			this.almPassword = "";
+			gse.printStackTrace();
+		}
 	}
 	
 	public void signIn() {
 		try {
 			
-			// for cooking handling
+			// We have to set the Cookie Handler with the Cookie Manager to handle Cookie Management from the server.
 			CookieManager manager = new CookieManager();
 			manager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 			CookieHandler.setDefault(manager);
@@ -140,11 +171,8 @@ public class App
 			if (this.conn.getResponseCode()!=200) {
 				throw new RuntimeException("Failed: HTTP Error Code: " + this.conn.getResponseCode());
 			}
-			// Debugging Code Below
-			
-			// System.out.println("Content Type is: " + this.conn.getContentType());
-			// this.conn.getContent();
-			
+			// Uncomment the below to see the Cookies generated from Signing in.
+						
 //			CookieStore cookieJar = manager.getCookieStore();
 //			List <HttpCookie> cookies = cookieJar.getCookies();
 //			for (HttpCookie cookie: cookies) {
@@ -166,7 +194,8 @@ public class App
 	
 	public void signOut() {
 		try {
-			// Debugging Code Below
+			// Uncomment the below to see the Cookies managed in the Cookie Manager.
+			
 //			CookieManager manager = (CookieManager) CookieHandler.getDefault();
 //			CookieStore cookieJar = manager.getCookieStore();
 //			List <HttpCookie> cookies = cookieJar.getCookies();
@@ -205,7 +234,10 @@ public class App
 		
 	}
 	
-	// Accessing anything other than Defects requires the experimental REST API.
+	// Note that ALM 12.50 provides a Tech Preview REST API to access entities other than Defects.
+	// Accessing anything other than Defects requires this Tech Preview REST API.
+	// Difference is that the URL is /qcbin/rest vs /qcbin/api 
+	// 
 	public void getEntityById(String type, String id) {
 		try {
 //			String userAndPassword = this.almUser + ":" + this.almPassword;
@@ -284,8 +316,6 @@ public class App
 			}
 			
 			out.close();
-			
-			
 			this.conn.disconnect();
 		}
 		catch (MalformedURLException e) {
@@ -297,6 +327,20 @@ public class App
 			System.out.println("IOException encountered during connection open");
 		}		
 	}
+	
+    private String decrypt(String property) throws GeneralSecurityException, IOException {
+        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
+        SecretKey key = keyFactory.generateSecret(new PBEKeySpec(PASSWORD));
+        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
+        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(SALT, 20));
+        return new String(pbeCipher.doFinal(base64Decode(property)), "UTF-8");
+    }
+
+    private byte[] base64Decode(String property) throws IllegalArgumentException {
+        // NB: This class is internal, and you probably should use another impl
+    	return Base64.getDecoder().decode(property);
+        // return new BASE64Decoder().decodeBuffer(property);
+    }	
 	
 	public static App getInstance() {
 		String host = System.getProperty("almHost");
