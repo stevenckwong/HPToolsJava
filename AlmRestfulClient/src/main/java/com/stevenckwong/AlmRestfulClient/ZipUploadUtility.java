@@ -19,7 +19,8 @@ public class ZipUploadUtility {
 		uploadApp.signIn();
 		// Provide the entity type to attach the file to, the ID of the entity, the file and the path
 		// to the file. Leave filepath empty to indicate the current directory
-		uploadApp.attachFileToEntity("test", "5", ".\\RunResults.zip", "");
+		// uploadApp.attachFileToEntity("test", "5", ".\\RunResults.zip", "");
+		uploadApp.attachFileToTest("5", ".\\RunResults.zip", "");
 		uploadApp.signOut();
 	}
 }
